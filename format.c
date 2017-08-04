@@ -26,7 +26,7 @@ static void *_raise_typed_error(PyObject *f, char *spec, PyObject *exc_type) {
 
 static int _check_format_string_is_literal(PyFrameObject *frame) {
   char *bytecode = PyString_AsString(frame->f_code->co_code);
-  /* check that the function argument is loaded using LOAD_COSNT 
+  /* check that the function argument is loaded using LOAD_COSNT
    * which means it is a literal value*/
   return bytecode[frame->f_lasti - 3] == LOAD_CONST;
 }
@@ -40,17 +40,18 @@ static PyObject *format(PyObject *self, PyObject *f) {
 
   if (!(PyUnicode_Check(f) || PyString_Check(f)))
     return _raise_typed_error(f, "Argument must be `str` or `unicode` not %s",
-                  PyExc_TypeError);
+                              PyExc_TypeError);
 
   if (!_check_format_string_is_literal(state->frame)) {
-    PyErr_SetString(PyExc_SyntaxError, "Argument to format() must be string literal");
+    PyErr_SetString(PyExc_SyntaxError,
+                    "Argument to format() must be string literal");
     return NULL;
   }
 
   m = PyObject_GetAttrString(f, "format");
   if (!m)
     return _raise_typed_error(f, "No `format` method found on object: %s",
-                  PyExc_AttributeError);
+                              PyExc_AttributeError);
 
   if (!state->frame->f_locals)
     PyFrame_FastToLocals(state->frame);
