@@ -1,8 +1,8 @@
 from distutils.core import setup, Extension
 from sys import version_info, exit
 
-if version_info.major != 2:
-    print('Only Python2.X is supported')
+if version_info[:3] >= (3, 6, 0,):
+    print('Only Python<3.6 is supported')
     exit(-1)
 
 fmtmod = Extension('format',
@@ -14,6 +14,6 @@ setup (name = 'format',
        author_email = 'podvody@redhat.com',
        license = 'MIT',
        keywords = 'string interpolation',
-       description = 'Faux string interpolation for Python2.7',
+       description = 'Faux string interpolation for Python<3.6',
        url = 'https://github.com/shaded-enmity/format',
        ext_modules = [fmtmod])

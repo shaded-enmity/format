@@ -2,8 +2,21 @@
 #include <frameobject.h>
 #include <stdio.h>
 
+
 #define ERR_BUF_SIZE 512
-#define LOAD_CONST 100
+#define LOAD_CONST   100
+#define OPCODE_SIZE  3
+
+#if PY_MAJOR_VERSION >= 3
+  #define TYPECHECK(f)     PyBytes_Check(f)
+  #define UNWRAP_CODE(b)   PyBytes_AS_STRING(b)
+  #define UNWRAP_STRING(b) PyUnicode_AsUTF8(b)
+#else
+  #define TYPECHECK(f)     !(PyUnicode_Check(f) || PyString_Check(f))
+  #define UNWRAP_CODE(b)   PyString_AsString(b)
+  #define UNWRAP_STRING(b) PyString_AsString(b)
+#endif
+
 
 static void *_raise_typed_error(PyObject *f, char *spec, PyObject *exc_type) {
   char message[ERR_BUF_SIZE];
@@ -13,7 +26,7 @@ static void *_raise_typed_error(PyObject *f, char *spec, PyObject *exc_type) {
 
   type = PyObject_Type(f);
   type_name = PyObject_Str(type);
-  name_str = PyString_AsString(type_name);
+  name_str = UNWRAP_STRING(type_name);
 
   Py_XDECREF(type);
   Py_XDECREF(type_name);
@@ -25,10 +38,10 @@ static void *_raise_typed_error(PyObject *f, char *spec, PyObject *exc_type) {
 }
 
 static int _check_format_string_is_literal(PyFrameObject *frame) {
-  char *bytecode = PyString_AsString(frame->f_code->co_code);
+  char *bytecode = UNWRAP_CODE(frame->f_code->co_code);
   /* check that the function argument is loaded using LOAD_COSNT
    * which means it is a literal value*/
-  return bytecode[frame->f_lasti - 3] == LOAD_CONST;
+  return bytecode[frame->f_lasti - OPCODE_SIZE] == LOAD_CONST;
 }
 
 static PyObject *format(PyObject *self, PyObject *f) {
@@ -38,7 +51,7 @@ static PyObject *format(PyObject *self, PyObject *f) {
 
   state = PyThreadState_GET();
 
-  if (!(PyUnicode_Check(f) || PyString_Check(f)))
+  if (TYPECHECK(f))
     return _raise_typed_error(f, "Argument must be `str` or `unicode` not %s",
                               PyExc_TypeError);
 
@@ -65,7 +78,19 @@ static PyMethodDef format_methods[] = {
     {"format", format, METH_O, "format a string using local variables"},
     {NULL, NULL, 0, NULL}};
 
+#if PY_MAJOR_VERSION >= 3
+
+static struct PyModuleDef formatmodule = {
+   PyModuleDef_HEAD_INIT, "format", "Faux string interpolation in Python<3.6",
+   -1, format_methods};
+
+PyMODINIT_FUNC PyInit_format(void) { return PyModule_Create(&formatmodule); }
+
+#else
+
 PyMODINIT_FUNC initformat() {
   Py_InitModule3("format", format_methods,
-                 "Faux string interpolation in Python 2.7");
+                 "Faux string interpolation in Python<3.6");
 }
+
+#endif

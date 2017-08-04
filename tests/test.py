@@ -1,8 +1,8 @@
-import format
+from format import format as f
 def test():
    x = 'aha'
    y = 1.0
-   return format.format('{x} is {y}')
+   return f('{x} is {y}')
 
 for _ in range(10000000):
   test()
