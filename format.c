@@ -38,10 +38,10 @@ static void *_raise_typed_error(PyObject *f, char *spec, PyObject *exc_type) {
 }
 
 static int _check_format_string_is_literal(PyFrameObject *frame) {
-  char *bytecode = UNWRAP_CODE(frame->f_code->co_code);
   /* check that the function argument is loaded using LOAD_COSNT
    * which means it is a literal value*/
-  return bytecode[frame->f_lasti - OPCODE_SIZE] == LOAD_CONST;
+  return frame->f_code->co_code && 
+         UNWRAP_CODE(frame->f_code->co_code)[frame->f_lasti - OPCODE_SIZE] == LOAD_CONST;
 }
 
 static PyObject *format(PyObject *self, PyObject *f) {
