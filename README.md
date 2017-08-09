@@ -1,6 +1,6 @@
 # Locally interpolating format function
 
-This Python2 module implementes simple string interpolation similar to [Python3.6's PEP-498](https://www.python.org/dev/peps/pep-0498/)
+This Python<3.6 module implementes simple string interpolation similar to [Python3.6's PEP-498](https://www.python.org/dev/peps/pep-0498/)
 with almost negligible performance overhead.
 
 ## Example
